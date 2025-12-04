@@ -1,5 +1,5 @@
-// === Black Dollar Trust Reader v4.0 ===
-// PDF + TXT Reader with Full Working Text-to-Speech
+// === Black Dollar Trust Reader v4.1 ===
+// PDF + TXT Reader with Full Working Text-to-Speech, Mobile Friendly
 
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
@@ -26,7 +26,6 @@ let currentBook = "";
 let currentPage = 1;
 let synth = window.speechSynthesis;
 let pdfTextPerPage = [];
-let currentUtterance = null;
 
 // === Initialize Voices ===
 function loadVoices() {
@@ -98,7 +97,6 @@ async function loadAndRenderPDF(data, filename) {
   pdfTextPerPage = [];
   bookList.textContent = `📗 Loaded PDF: ${filename}`;
 
-  // Extract text for speech synthesis
   for (let i = 1; i <= pdfDoc.numPages; i++) {
     const page = await pdfDoc.getPage(i);
     const content = await page.getTextContent();
@@ -137,7 +135,7 @@ nextPageBtn.addEventListener("click", () => {
   if (pdfDoc && currentPage < pdfDoc.numPages) showPage(++currentPage);
 });
 
-// === Voice Reading (Stable + Retry + Voice Fallback) ===
+// === Voice Reading (Stable + Mobile Friendly) ===
 readBtn.addEventListener("click", async () => {
   if (!pdfDoc && (!currentText || currentText.trim() === "")) {
     alert("Please upload a readable PDF or TXT book first.");
@@ -146,10 +144,9 @@ readBtn.addEventListener("click", async () => {
 
   if (synth.speaking) synth.cancel();
 
-  // Make sure voices are ready
+  // Wait for voices
   let voices = synth.getVoices();
   if (voices.length === 0) {
-    console.warn("Voices not loaded yet — reinitializing...");
     await new Promise((res) => {
       speechSynthesis.onvoiceschanged = () => {
         voices = synth.getVoices();
@@ -158,17 +155,11 @@ readBtn.addEventListener("click", async () => {
     });
   }
 
-  // Get text for current page or full book
-  let textToRead = "";
-  if (pdfDoc) {
-    textToRead = pdfTextPerPage[currentPage - 1] || "";
-  } else {
-    textToRead = currentText;
-  }
+  let textToRead = pdfDoc
+    ? pdfTextPerPage[currentPage - 1] || ""
+    : currentText || "";
 
-  // Sanitize text — remove broken characters
   textToRead = textToRead.replace(/[^\x20-\x7E\n\r]/g, " ").trim();
-
   if (!textToRead || textToRead.length < 5) {
     alert("No readable text detected on this page.");
     return;
@@ -176,29 +167,20 @@ readBtn.addEventListener("click", async () => {
 
   const utter = new SpeechSynthesisUtterance(textToRead);
   let selected = voices.find((v) => v.name === voiceSelect.value);
-
-  // Fallback to a default voice if the selected one is missing
-  if (!selected && voices.length > 0) {
-    console.warn("Selected voice unavailable — using default.");
-    selected = voices[0];
-  }
-
+  if (!selected && voices.length > 0) selected = voices[0];
   utter.voice = selected;
   utter.rate = 1.0;
   utter.pitch = 1.0;
   utter.volume = 1.0;
 
-  // Logging for debug
   utter.onstart = () => console.log("🎧 Reading started...");
   utter.onend = () => console.log("✅ Finished reading.");
   utter.onerror = (err) => {
     console.error("❌ Speech synthesis error:", err);
-    alert("There was an error starting the voice engine. Retrying...");
     synth.cancel();
-    setTimeout(() => synth.speak(utter), 500);
+    setTimeout(() => synth.speak(utter), 800);
   };
 
-  // Speak only after user interaction — avoids autoplay block
   synth.cancel();
   synth.speak(utter);
 });
@@ -212,65 +194,7 @@ stopBtn.addEventListener("click", () => {
   console.log("🛑 Reading stopped.");
 });
 
-
-  // Determine what to read
-  let textToRead = "";
-  if (pdfDoc) {
-    textToRead = pdfTextPerPage[currentPage - 1] || "";
-  } else {
-    textToRead = currentText;
-  }
-
-  if (!textToRead.trim()) {
-    alert("No readable text found on this page.");
-    return;
-  }
-
-  const utterance = new SpeechSynthesisUtterance(textToRead);
-  const selected = voices.find((v) => v.name === voiceSelect.value);
-  if (selected) utterance.voice = selected;
-  utterance.rate = 1; // normal speed
-  utterance.pitch = 1; // normal tone
-
-  utterance.onstart = () => {
-    console.log("🎧 Reading started...");
-    readBtn.disabled = true;
-  };
-
-  utterance.onend = () => {
-    console.log("✅ Finished reading.");
-    readBtn.disabled = false;
-  };
-
-  utterance.onerror = (e) => {
-    console.error("Speech error:", e);
-    alert("Speech synthesis error occurred. Try another voice.");
-  };
-
-  currentUtterance = utterance;
-  synth.speak(utterance);
-});
-
-// === Pause / Resume / Stop ===
-pauseBtn.addEventListener("click", () => {
-  if (synth.speaking) {
-    if (synth.paused) {
-      synth.resume();
-      console.log("▶️ Resumed reading.");
-    } else {
-      synth.pause();
-      console.log("⏸ Paused reading.");
-    }
-  }
-});
-
-stopBtn.addEventListener("click", () => {
-  synth.cancel();
-  console.log("🛑 Reading stopped.");
-  readBtn.disabled = false;
-});
-
-// === Font, Size, Theme ===
+// === Font, Size, Theme Controls ===
 fontSelect.addEventListener("change", () => {
   textPreview.style.fontFamily = fontSelect.value;
 });
