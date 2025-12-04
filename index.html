@@ -2,80 +2,48 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Black Dollar Trust Book Club</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
- <!-- PDF.js + EPUB.js -->
-  <script src="libs/pdf.min.js"></script>
-  <script src="libs/pdf.worker.min.js"></script>
-  <script src="libs/epub.min.js"></script>
-
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <div class="app">
-    <header class="header">
-      <div class="header-left">
-        <div class="logo-title">
-          <h1>Black Dollar Trust Book Club</h1>
-          <span class="subtitle">Pan-African Reading • Knowledge • Games</span>
-        </div>
-      </div>
+  <header>
+    <h1>Black Dollar Trust Book Club</h1>
+    <p class="subtitle">Pan-African Reading • Knowledge • Growth</p>
+  </header>
 
-      <div class="header-right">
-        <label class="logo-upload">
-          <input type="file" id="logoInput" accept="image/*" hidden />
-          <img id="logoPreview" alt="Upload Logo" title="Click to upload logo" />
-          <span class="upload-hint">Upload Logo</span>
-        </label>
-      </div>
-    </header>
+  <main>
+    <section class="library">
+      <h2>📚 Your Library</h2>
+      <p>Upload PDF, TXT, or EPUB files to begin reading aloud.</p>
 
-    <main class="main">
-      <!-- Left: Reader -->
-      <section class="reader-panel">
-        <h2>📚 Your Library</h2>
-        <p class="panel-subtext">Upload <b>PDF</b>, <b>TXT</b>, or <b>EPUB</b> files to begin reading.</p>
+      <input type="file" id="fileInput" accept=".pdf,.txt,.epub" multiple />
+      <button id="uploadBtn">Upload Books</button>
 
-        <div class="upload-row">
-          <label class="file-btn">
-            <input type="file" id="bookInput" multiple accept=".pdf,.txt,.epub" hidden />
-            Upload Book(s)
-          </label>
-          <span id="uploadStatus">No files uploaded.</span>
-        </div>
+      <div id="bookList"></div>
+    </section>
 
-        <div id="bookList" class="book-list"></div>
+    <section class="preview">
+      <h2>📖 Preview</h2>
+      <canvas id="pdfCanvas"></canvas>
+      <div id="textPreview"></div>
+    </section>
 
-        <div class="reader-controls">
-          <select id="voiceSelect" class="voice-select"></select>
-          <button id="readBtn">▶ Read</button>
-          <button id="pauseBtn">⏸ Pause</button>
-          <button id="stopBtn">⏹ Stop</button>
-        </div>
+    <section class="controls">
+      <select id="voiceSelect"></select>
+      <button id="readBtn">Read</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="stopBtn">Stop</button>
+    </section>
+  </main>
 
-        <div class="preview-area">
-          <canvas id="pdfCanvas"></canvas>
-          <div id="textPreview"></div>
-        </div>
-      </section>
+  <footer>
+    <p>© 2025 Black Dollar Trust Book Club • Pan-African Voices of Knowledge</p>
+  </footer>
 
-      <section class="games-panel">
-  <div class="game-card">
-    <div class="game-main">
-      <div class="game-header">
-        <div>
-          <div class="game-title">♠ Black Dollar Spades</div>
-          <div class="game-subtitle">Play Spades against the Cookout Crew.</div>
-        </div>
-      </div>
-
-      <div style="margin-top:12px;">
-        <button class="bb-btn" onclick="window.location.href='spades.html'">
-          🎮 Start Game
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
+  <script src="libs/pdf.min.js"></script>
+  <script src="libs/epub.min.js"></script>
+  <script src="reader.js"></script>
+</body>
+</html>
