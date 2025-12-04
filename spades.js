@@ -1,11 +1,11 @@
-// Black Dollar Trust Spades 🃏
-// Offline Mode: Player + AI Bots (3 Opponents)
-// Enhanced card color + visibility stack display
-// © 2025 Black Dollar Trust Book Club
+// Black Dollar Trust Spades: Cookout Crew Edition 💬
+// Adds personality, taunts, and banter from AI opponents
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("spadesCanvas");
   const ctx = canvas.getContext("2d");
+  const status = document.getElementById("status");
+  const startBtn = document.getElementById("startGame");
 
   canvas.width = 900;
   canvas.height = 600;
@@ -15,8 +15,40 @@ document.addEventListener("DOMContentLoaded", () => {
   let deck = [];
   let hands = { player: [], ai1: [], ai2: [], ai3: [] };
   let playedCards = [];
+  let aiPersonalities = [
+    {
+      name: "Uncle Tony",
+      mood: "Playful",
+      phrases: [
+        "Boy, you sure you know how to play this game?",
+        "Mmm, that was a bold move.",
+        "You must be new to the table.",
+        "Heh, I taught your cousin how to play this!"
+      ]
+    },
+    {
+      name: "Auntie Rose",
+      mood: "Confident",
+      phrases: [
+        "Baby, I been running this table since the 80s.",
+        "Don't play with me — I got books to win.",
+        "Mmm-hmm, that’s a bad play, sugar.",
+        "You might as well put that card back in your hand!"
+      ]
+    },
+    {
+      name: "Cousin Dre",
+      mood: "Cocky",
+      phrases: [
+        "You can’t stop greatness.",
+        "This is what I do!",
+        "Y’all better pack it up after this hand.",
+        "Easy money, easy books."
+      ]
+    }
+  ];
 
-  // 🎴 Create Deck
+  // Create deck
   function createDeck() {
     deck = [];
     for (let suit of suits) {
@@ -30,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🔀 Shuffle
+  // Shuffle
   function shuffle(deck) {
     for (let i = deck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -39,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return deck;
   }
 
-  // 🫱 Deal Cards
+  // Deal hands
   function deal() {
     createDeck();
     shuffle(deck);
@@ -51,16 +83,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🧠 AI Logic (simple version)
-  function aiPlay(aiHand) {
-    const playable = aiHand[Math.floor(Math.random() * aiHand.length)];
-    aiHand.splice(aiHand.indexOf(playable), 1);
-    return playable;
-  }
-
-  // 🃏 Draw Card
+  // Draw card
   function drawCard(ctx, card, x, y) {
-    ctx.fillStyle = "#222";
+    ctx.fillStyle = "#1a1a1a";
     ctx.strokeStyle = "gold";
     ctx.lineWidth = 2;
     ctx.fillRect(x, y, 60, 90);
@@ -71,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.fillText(getSuitSymbol(card.suit), x + 30, y + 70);
   }
 
-  // ♠️ Suit Symbols
   function getSuitSymbol(suit) {
     switch (suit) {
       case "hearts": return "♥";
@@ -81,10 +105,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 🖼️ Render Player Hand
   function renderHands() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Player Hand
@@ -94,11 +117,9 @@ document.addEventListener("DOMContentLoaded", () => {
       x += 45;
     }
 
-    // Played Cards Stack
     renderPlayedCards(playedCards, ctx);
   }
 
-  // 🧩 Render Played Cards (stacked)
   function renderPlayedCards(cards, ctx) {
     let offset = 0;
     cards.forEach((card, i) => {
@@ -109,7 +130,25 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.globalAlpha = 1;
   }
 
-  // 🎮 Player Plays Card
+  // 🎤 AI Play with Banter
+  function aiPlay(aiHand, aiIndex) {
+    const playable = aiHand[Math.floor(Math.random() * aiHand.length)];
+    aiHand.splice(aiHand.indexOf(playable), 1);
+    const ai = aiPersonalities[aiIndex];
+    const line = ai.phrases[Math.floor(Math.random() * ai.phrases.length)];
+
+    showStatus(`${ai.name}: "${line}"`);
+    return playable;
+  }
+
+  // Show text overlay
+  function showStatus(text) {
+    status.textContent = text;
+    status.style.opacity = 1;
+    setTimeout(() => (status.style.opacity = 0.7), 2500);
+  }
+
+  // Player clicks card
   canvas.addEventListener("click", e => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -120,30 +159,37 @@ document.addEventListener("DOMContentLoaded", () => {
       if (hands.player[cardIndex]) {
         const played = hands.player.splice(cardIndex, 1)[0];
         playedCards.push(played);
-        aiTurns();
         renderHands();
+        showStatus("You played " + played.value + " of " + played.suit);
+        setTimeout(aiTurns, 1000);
       }
     }
   });
 
-  // 🤖 AI Turns
+  // AI turns
   function aiTurns() {
-    playedCards.push(aiPlay(hands.ai1));
-    playedCards.push(aiPlay(hands.ai2));
-    playedCards.push(aiPlay(hands.ai3));
-
+    playedCards.push(aiPlay(hands.ai1, 0));
+    renderHands();
+    setTimeout(() => {
+      playedCards.push(aiPlay(hands.ai2, 1));
+      renderHands();
+    }, 1000);
+    setTimeout(() => {
+      playedCards.push(aiPlay(hands.ai3, 2));
+      renderHands();
+    }, 2000);
     setTimeout(() => {
       playedCards = [];
       renderHands();
-    }, 2000);
+      showStatus("New round begins!");
+    }, 4000);
   }
 
-  // 🟢 Start Game Button
-  const startBtn = document.getElementById("startGame");
   startBtn.addEventListener("click", () => {
     hands = { player: [], ai1: [], ai2: [], ai3: [] };
     playedCards = [];
     deal();
     renderHands();
+    showStatus("Game started! Good luck at the table.");
   });
 });
