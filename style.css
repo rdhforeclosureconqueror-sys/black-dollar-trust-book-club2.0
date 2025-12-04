@@ -1,156 +1,148 @@
-/* Black Dollar Trust Spades 🎴
-   Pan-African 3D Board Look & Feel
-   © 2025 Black Dollar Trust Book Club
-*/
-
+/* === General === */
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
-  background: radial-gradient(circle at top, #000 0%, #111 100%);
-  color: #f0f0f0;
-  overflow: hidden;
+  background: radial-gradient(circle at top, #101820, #000);
+  color: #fff;
+  overflow-x: hidden;
 }
 
 header {
-  background: linear-gradient(90deg, #d10a0a 0%, #000 40%, #006b3f 100%);
-  border-bottom: 4px solid gold;
-  padding: 10px 20px;
   text-align: center;
-  font-weight: bold;
-  color: gold;
-  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+  background: linear-gradient(90deg, #d71a28, #ffd700, #007847);
+  color: #000;
+  padding: 15px;
+  font-weight: 600;
 }
 
+.subtitle {
+  font-size: 0.9rem;
+  color: #222;
+}
+
+/* === Main Layout === */
 main {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: calc(100vh - 80px);
+  padding: 15px;
+  gap: 20px;
 }
 
-/* Game Table Container */
-.game-board {
-  position: relative;
-  width: 900px;
-  height: 600px;
-  border: 6px solid gold;
+.upload-section, .preview-section {
+  background: rgba(20, 20, 30, 0.9);
+  border: 2px solid #ffd700;
   border-radius: 10px;
-  background: radial-gradient(circle at 50% 50%, #1a1a1a, #000);
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
-  overflow: hidden;
-  animation: tableGlow 4s infinite alternate;
+  padding: 15px;
+  width: 95%;
+  max-width: 700px;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.3);
 }
 
-/* Shimmer animation for gold frame */
-@keyframes tableGlow {
-  0% { box-shadow: 0 0 10px gold; }
-  50% { box-shadow: 0 0 25px #facc15; }
-  100% { box-shadow: 0 0 10px gold; }
+.upload-section h2, .preview-section h2 {
+  margin-top: 0;
+  color: #ffd700;
 }
 
-/* Canvas styling */
-#spadesCanvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 50% 50%, #0b0b0b, #000);
-  cursor: pointer;
+/* === File Upload === */
+.file-upload {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
 }
 
-/* Start Game button */
-#startGame {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(90deg, gold, #b8860b);
+button, select {
+  background: linear-gradient(90deg, #ffd700, #ff2a2a);
   border: none;
   color: #000;
   font-weight: bold;
-  padding: 12px 22px;
-  border-radius: 6px;
-  font-size: 16px;
+  border-radius: 8px;
+  padding: 8px 12px;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
-  transition: 0.3s ease;
+  transition: 0.3s;
 }
 
-#startGame:hover {
-  transform: translateX(-50%) scale(1.05);
-  box-shadow: 0 0 20px rgba(255, 215, 0, 1);
+button:hover, select:hover {
+  transform: scale(1.05);
 }
 
-/* Overlay text for AI dialogue or status */
-.status-banner {
-  position: absolute;
-  top: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.6);
-  color: gold;
-  padding: 6px 18px;
-  border: 1px solid gold;
-  border-radius: 6px;
-  font-size: 15px;
+/* === Preview Section === */
+#pdfCanvas, #textPreview {
+  width: 100%;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: #111;
+  color: #ddd;
+  border-radius: 8px;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+/* === PDF Controls === */
+.pdf-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.pdf-btn {
+  background: linear-gradient(90deg, #ffb100, #ff3300);
+  color: #000;
   font-weight: 600;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+  border: none;
+  cursor: pointer;
 }
 
-/* Placeholder for player names */
-.player-label {
-  position: absolute;
-  color: #f5f5f5;
-  background: rgba(255, 215, 0, 0.15);
-  border: 1px solid gold;
-  padding: 4px 10px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px #000;
+.pdf-btn:hover {
+  transform: scale(1.1);
 }
 
-.player-bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
-.player-top { top: 10px; left: 50%; transform: translateX(-50%); }
-.player-left { top: 50%; left: 10px; transform: translateY(-50%); }
-.player-right { top: 50%; right: 10px; transform: translateY(-50%); }
-
-/* Card hover hint */
-canvas:hover {
-  filter: brightness(1.1);
-}
-main {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: start;
-}
-
-.library, .preview {
-  background: rgba(20, 20, 20, 0.9);
-  border: 2px solid #ffd700;
-  padding: 1.5rem;
-  border-radius: 10px;
-}
-
-.controls {
-  grid-column: span 2;
+/* === Footer === */
+footer {
   text-align: center;
-  margin-top: 1rem;
+  padding: 10px 0 25px;
+  background: #000;
+  border-top: 2px solid #ffd700;
 }
 
-#bookList {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: #ccc;
+.voice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
-input[type="file"] {
-  background: none;
-  border: 1px solid #ffd700;
-  color: #fff;
-  padding: 0.5rem;
-  border-radius: 5px;
+.footer-text {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+/* === Mobile Responsiveness === */
+@media (max-width: 600px) {
+  body {
+    font-size: 0.9rem;
+  }
+
+  header {
+    padding: 10px;
+    font-size: 1.1rem;
+  }
+
+  #pdfCanvas, #textPreview {
+    max-height: 50vh;
+  }
+
+  button, select {
+    width: 100%;
+    font-size: 1rem;
+  }
+
+  .file-upload {
+    flex-direction: column;
+  }
 }
