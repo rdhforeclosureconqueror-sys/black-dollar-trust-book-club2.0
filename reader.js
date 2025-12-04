@@ -1,6 +1,7 @@
 // === Black Dollar Trust Book Club Reader ===
-// Supports PDF, TXT, and EPUB + Text-to-Speech Voice Reading
+// Clean Version — PDF, TXT, EPUB + Voice Reader
 
+// === Element References ===
 const fileInput = document.getElementById('fileInput');
 const uploadBtn = document.getElementById('uploadBtn');
 const bookList = document.getElementById('bookList');
@@ -15,72 +16,86 @@ let currentText = '';
 let currentUtterance = null;
 const synth = window.speechSynthesis;
 
-// === Load available voices ===
+// === Load Voice Options ===
 function loadVoices() {
   const voices = synth.getVoices();
   voiceSelect.innerHTML = '';
-  voices.forEach(voice => {
+  voices.forEach((voice) => {
     const option = document.createElement('option');
     option.value = voice.name;
     option.textContent = `${voice.name} (${voice.lang})`;
     voiceSelect.appendChild(option);
   });
+
+  // Default to first English or African-accent voice if available
+  const defaultVoice = voices.find(v => v.lang.startsWith('en') || v.lang.includes('af')) || voices[0];
+  if (defaultVoice) voiceSelect.value = defaultVoice.name;
 }
 window.speechSynthesis.onvoiceschanged = loadVoices;
 
-// === Handle Upload Button ===
+// === Upload Handler ===
 uploadBtn.addEventListener('click', () => {
   const file = fileInput.files[0];
   if (!file) return alert('Please select a file first.');
 
   const reader = new FileReader();
-  const ext = file.name.split('.').pop().toLowerCase();
+  const extension = file.name.split('.').pop().toLowerCase();
 
-  if (ext === 'txt') {
+  if (extension === 'txt') {
     reader.onload = () => {
       currentText = reader.result;
-      textPreview.textContent = currentText.slice(0, 1000); // Show first part
+      textPreview.textContent = currentText.slice(0, 2000);
       bookList.textContent = `Loaded: ${file.name}`;
     };
     reader.readAsText(file);
-  } else if (ext === 'pdf') {
+  } 
+  else if (extension === 'pdf') {
     reader.onload = () => renderPDF(reader.result, file.name);
     reader.readAsArrayBuffer(file);
-  } else if (ext === 'epub') {
+  } 
+  else if (extension === 'epub') {
     reader.onload = () => {
-      currentText = 'EPUB file loaded successfully.';
+      currentText = 'EPUB file loaded successfully. (EPUB text extraction coming soon.)';
       textPreview.textContent = currentText;
       bookList.textContent = `Loaded: ${file.name}`;
     };
     reader.readAsArrayBuffer(file);
-  } else {
-    alert('Unsupported file type. Please upload a PDF, TXT, or EPUB.');
+  } 
+  else {
+    alert('Unsupported file format. Please upload PDF, TXT, or EPUB.');
   }
 });
 
-// === PDF Rendering ===
+// === PDF.js Renderer ===
 function renderPDF(data, filename) {
+  if (typeof pdfjsLib === 'undefined') {
+    alert('PDF.js library not loaded.');
+    return;
+  }
+
   const loadingTask = pdfjsLib.getDocument({ data });
-  loadingTask.promise.then(pdf => {
+  loadingTask.promise.then((pdf) => {
     bookList.textContent = `Loaded: ${filename}`;
-    pdf.getPage(1).then(page => {
+    pdf.getPage(1).then((page) => {
       const viewport = page.getViewport({ scale: 1.2 });
       const canvas = pdfCanvas;
-      const ctx = canvas.getContext('2d');
+      const context = canvas.getContext('2d');
       canvas.height = viewport.height;
       canvas.width = viewport.width;
 
-      page.render({ canvasContext: ctx, viewport }).promise.then(() => {
-        currentText = `Previewing: ${filename}`;
+      const renderTask = page.render({ canvasContext: context, viewport });
+      renderTask.promise.then(() => {
+        currentText = `PDF Preview: ${filename}`;
+        textPreview.textContent = 'PDF loaded successfully. Use Read button for speech.';
       });
     });
-  }).catch(err => {
+  }).catch((err) => {
     console.error('Error rendering PDF:', err);
-    alert('Failed to load PDF.');
+    alert('Error loading PDF file.');
   });
 }
 
-// === Voice Controls ===
+// === Text-to-Speech Controls ===
 readBtn.addEventListener('click', () => {
   if (!currentText) {
     alert('Please upload a readable file first.');
@@ -97,7 +112,10 @@ readBtn.addEventListener('click', () => {
 });
 
 pauseBtn.addEventListener('click', () => {
-  if (synth.speaking) synth.pause();
+  if (synth.speaking) {
+    if (synth.paused) synth.resume();
+    else synth.pause();
+  }
 });
 
 stopBtn.addEventListener('click', () => {
