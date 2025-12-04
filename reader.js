@@ -1,123 +1,127 @@
-// === Black Dollar Trust Book Club Reader ===
-// Clean Version — PDF, TXT, EPUB + Voice Reader
+// === Black Dollar Trust Reader 2.1 ===
+// Reading Progress + Resume
 
-// === Element References ===
 const fileInput = document.getElementById('fileInput');
 const uploadBtn = document.getElementById('uploadBtn');
 const bookList = document.getElementById('bookList');
-const pdfCanvas = document.getElementById('pdfCanvas');
 const textPreview = document.getElementById('textPreview');
+const pdfCanvas = document.getElementById('pdfCanvas');
+const progressBar = document.getElementById('progressBar');
+const continueBtn = document.getElementById('continueBtn');
 const voiceSelect = document.getElementById('voiceSelect');
 const readBtn = document.getElementById('readBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const stopBtn = document.getElementById('stopBtn');
 
 let currentText = '';
-let currentUtterance = null;
-const synth = window.speechSynthesis;
+let currentBook = '';
+let pdfDoc = null;
+let synth = window.speechSynthesis;
 
-// === Load Voice Options ===
+// === Load Voices ===
 function loadVoices() {
   const voices = synth.getVoices();
   voiceSelect.innerHTML = '';
-  voices.forEach((voice) => {
-    const option = document.createElement('option');
-    option.value = voice.name;
-    option.textContent = `${voice.name} (${voice.lang})`;
-    voiceSelect.appendChild(option);
+  voices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang})`;
+    voiceSelect.appendChild(opt);
   });
-
-  // Default to first English or African-accent voice if available
-  const defaultVoice = voices.find(v => v.lang.startsWith('en') || v.lang.includes('af')) || voices[0];
-  if (defaultVoice) voiceSelect.value = defaultVoice.name;
 }
 window.speechSynthesis.onvoiceschanged = loadVoices;
 
-// === Upload Handler ===
+// === Upload Book ===
 uploadBtn.addEventListener('click', () => {
   const file = fileInput.files[0];
-  if (!file) return alert('Please select a file first.');
+  if (!file) return alert('Please select a book.');
 
   const reader = new FileReader();
-  const extension = file.name.split('.').pop().toLowerCase();
+  const ext = file.name.split('.').pop().toLowerCase();
+  currentBook = file.name;
 
-  if (extension === 'txt') {
-    reader.onload = () => {
-      currentText = reader.result;
-      textPreview.textContent = currentText.slice(0, 2000);
-      bookList.textContent = `Loaded: ${file.name}`;
-    };
+  if (ext === 'txt') {
+    reader.onload = () => showText(reader.result, file.name);
     reader.readAsText(file);
-  } 
-  else if (extension === 'pdf') {
-    reader.onload = () => renderPDF(reader.result, file.name);
+  } else if (ext === 'pdf') {
+    reader.onload = () => renderPDFText(reader.result, file.name);
     reader.readAsArrayBuffer(file);
-  } 
-  else if (extension === 'epub') {
-    reader.onload = () => {
-      currentText = 'EPUB file loaded successfully. (EPUB text extraction coming soon.)';
-      textPreview.textContent = currentText;
-      bookList.textContent = `Loaded: ${file.name}`;
-    };
-    reader.readAsArrayBuffer(file);
-  } 
-  else {
-    alert('Unsupported file format. Please upload PDF, TXT, or EPUB.');
+  } else {
+    alert('Only PDF or TXT supported for now.');
   }
 });
 
-// === PDF.js Renderer ===
-function renderPDF(data, filename) {
-  if (typeof pdfjsLib === 'undefined') {
-    alert('PDF.js library not loaded.');
-    return;
+// === Show Text ===
+function showText(content, name) {
+  bookList.textContent = `📘 Loaded: ${name}`;
+  currentText = content;
+  textPreview.innerHTML = formatBookText(content);
+  pdfCanvas.style.display = 'none';
+
+  // Restore saved position if available
+  const savedScroll = localStorage.getItem(`${name}-scroll`);
+  if (savedScroll) {
+    continueBtn.style.display = 'block';
+  } else {
+    continueBtn.style.display = 'none';
   }
-
-  const loadingTask = pdfjsLib.getDocument({ data });
-  loadingTask.promise.then((pdf) => {
-    bookList.textContent = `Loaded: ${filename}`;
-    pdf.getPage(1).then((page) => {
-      const viewport = page.getViewport({ scale: 1.2 });
-      const canvas = pdfCanvas;
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      const renderTask = page.render({ canvasContext: context, viewport });
-      renderTask.promise.then(() => {
-        currentText = `PDF Preview: ${filename}`;
-        textPreview.textContent = 'PDF loaded successfully. Use Read button for speech.';
-      });
-    });
-  }).catch((err) => {
-    console.error('Error rendering PDF:', err);
-    alert('Error loading PDF file.');
-  });
 }
 
-// === Text-to-Speech Controls ===
-readBtn.addEventListener('click', () => {
-  if (!currentText) {
-    alert('Please upload a readable file first.');
-    return;
+// === Format Book Text ===
+function formatBookText(text) {
+  const paragraphs = text.split(/\n\s*\n/).map(p => `<p>${p.trim()}</p>`).join('');
+  return `<div class="book-page">${paragraphs}</div>`;
+}
+
+// === PDF Text Extraction ===
+async function renderPDFText(data, filename) {
+  textPreview.textContent = 'Extracting PDF text...';
+  const loadingTask = pdfjsLib.getDocument({ data });
+  pdfDoc = await loadingTask.promise;
+
+  let allText = '';
+  for (let i = 1; i <= pdfDoc.numPages; i++) {
+    const page = await pdfDoc.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item => item.str).join(' ');
+    allText += '\n\n' + pageText;
   }
 
+  showText(allText, filename);
+}
+
+// === Track Progress ===
+textPreview.addEventListener('scroll', () => {
+  const scrollTop = textPreview.scrollTop;
+  const scrollHeight = textPreview.scrollHeight - textPreview.clientHeight;
+  const progress = (scrollTop / scrollHeight) * 100;
+
+  progressBar.style.width = `${progress}%`;
+
+  // Save progress
+  if (currentBook) {
+    localStorage.setItem(`${currentBook}-scroll`, scrollTop);
+  }
+});
+
+// === Continue Reading ===
+continueBtn.addEventListener('click', () => {
+  const savedScroll = localStorage.getItem(`${currentBook}-scroll`);
+  if (savedScroll) {
+    textPreview.scrollTo({ top: parseFloat(savedScroll), behavior: 'smooth' });
+  }
+});
+
+// === Voice Controls ===
+readBtn.onclick = () => {
+  if (!currentText) return alert('Please upload a readable file.');
   if (synth.speaking) synth.cancel();
 
-  currentUtterance = new SpeechSynthesisUtterance(currentText);
-  const selectedVoice = synth.getVoices().find(v => v.name === voiceSelect.value);
-  if (selectedVoice) currentUtterance.voice = selectedVoice;
+  const utterance = new SpeechSynthesisUtterance(currentText);
+  const selected = synth.getVoices().find(v => v.name === voiceSelect.value);
+  if (selected) utterance.voice = selected;
+  synth.speak(utterance);
+};
 
-  synth.speak(currentUtterance);
-});
-
-pauseBtn.addEventListener('click', () => {
-  if (synth.speaking) {
-    if (synth.paused) synth.resume();
-    else synth.pause();
-  }
-});
-
-stopBtn.addEventListener('click', () => {
-  synth.cancel();
-});
+pauseBtn.onclick = () => synth.speaking && (synth.paused ? synth.resume() : synth.pause());
+stopBtn.onclick = () => synth.cancel();
