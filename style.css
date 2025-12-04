@@ -178,3 +178,42 @@ footer {
     padding: 12px;
   }
 }
+
+/* === Reading Progress === */
+#progressContainer {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+#progressBar {
+  height: 8px;
+  background: linear-gradient(90deg, #ffb700, #ff3b3b);
+  width: 0%;
+  transition: width 0.3s ease;
+  border-radius: 6px;
+}
+
+.progress-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+#continueBtn {
+  background: linear-gradient(90deg, #ffb700, #ff3333);
+  border: none;
+  color: #000;
+  font-weight: bold;
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#continueBtn:hover {
+  transform: scale(1.05);
+}
