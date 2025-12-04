@@ -5,89 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Black Dollar Trust Book Club</title>
 
-  <!-- Google Fonts -->
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Georgia&display=swap" rel="stylesheet" />
 
   <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+  <!-- AI + Natural Speech Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0/dist/transformers.min.js"></script>
+  <script src="https://code.responsivevoice.org/responsivevoice.js?key=YOUR_KEY_IF_NEEDED"></script>
 
   <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+  <!-- HEADER -->
   <header>
     <h1>Black Dollar Trust Book Club</h1>
     <p class="subtitle">Pan-African Reading • Knowledge • Growth</p>
   </header>
 
+  <!-- MAIN CONTENT -->
   <main>
     <!-- Upload Section -->
     <section class="upload-section">
       <h2>📚 Your Library</h2>
-      <p>Upload PDF or TXT books to read and listen.</p>
+      <p>Upload PDF or TXT files to begin reading aloud.</p>
+
       <div class="file-upload">
         <input type="file" id="fileInput" accept=".pdf,.txt" />
         <button id="uploadBtn">Upload Book</button>
       </div>
+
       <p id="bookList"></p>
     </section>
 
-   <!-- Reader Section -->
-<section class="reader-section">
-  <h2 id="bookTitle">📖 Book Preview</h2>
-  <canvas id="pdfCanvas"></canvas>
-  <div id="textPreview" class="text-preview" contenteditable="false"></div>
+    <!-- Reader Section -->
+    <section class="preview-section">
+      <h2 id="bookTitle">📖 Book Preview</h2>
 
-  <div id="progressContainer"><div id="progressBar"></div></div>
+      <canvas id="pdfCanvas"></canvas>
+      <div id="textPreview"></div>
 
-  <div class="page-controls">
-    <button id="prevPageBtn">⬅️ Prev</button>
-    <span id="pageIndicator">Page 1</span>
-    <button id="nextPageBtn">Next ➡️</button>
-  </div>
+      <!-- Progress Bar -->
+      <div id="progressContainer">
+        <div id="progressBar"></div>
+      </div>
 
-  <button id="continueBtn" class="hidden">⏩ Continue Reading</button>
-</section>
+      <!-- Page Controls -->
+      <div class="page-controls">
+        <button id="prevPageBtn">⬅️ Prev</button>
+        <span id="pageIndicator">Page 1</span>
+        <button id="nextPageBtn">Next ➡️</button>
+      </div>
 
+      <!-- Font, Theme Controls -->
+      <div class="reader-controls">
+        <select id="fontSelect">
+          <option value="Georgia">Georgia</option>
+          <option value="Poppins">Poppins</option>
+          <option value="Arial">Arial</option>
+          <option value="Times New Roman">Times New Roman</option>
+        </select>
 
-      <!-- Continue -->
-      <button id="continueBtn" class="hidden">⏩ Continue Reading</button>
+        <label for="fontSizeSlider">Font Size</label>
+        <input type="range" id="fontSizeSlider" min="14" max="26" value="18" />
+
+        <select id="themeSelect">
+          <option value="">Dark Theme</option>
+          <option value="light">Light Theme</option>
+        </select>
+      </div>
+
+      <!-- Continue Button -->
+      <div class="progress-controls">
+        <button id="continueBtn">⏩ Continue Reading</button>
+      </div>
     </section>
   </main>
 
+  <!-- FOOTER -->
   <footer>
     <div class="voice-controls">
       <select id="voiceSelect"></select>
       <button id="readBtn">🔊 Read</button>
       <button id="pauseBtn">⏸ Pause</button>
       <button id="stopBtn">⏹ Stop</button>
+      <label>
+        <input type="checkbox" id="smartMode" checked />
+        Smart AI Reading
+      </label>
     </div>
-
-    <div class="reader-settings">
-      <label>Font:</label>
-      <select id="fontSelect">
-        <option value="Poppins">Poppins</option>
-        <option value="Georgia">Georgia</option>
-        <option value="Arial">Arial</option>
-      </select>
-
-      <label>Size:</label>
-      <input type="range" id="fontSizeSlider" min="14" max="28" value="18" />
-
-      <label>Theme:</label>
-      <select id="themeSelect">
-        <option value="">Default</option>
-        <option value="light-theme">Light</option>
-        <option value="sepia-theme">Sepia</option>
-      </select>
-    </div>
-
     <p class="footer-text">
       © 2025 Black Dollar Trust Book Club — Pan-African Reading, Knowledge & Growth
     </p>
   </footer>
 
+  <!-- Scripts -->
   <script src="reader.js"></script>
 </body>
 </html>
