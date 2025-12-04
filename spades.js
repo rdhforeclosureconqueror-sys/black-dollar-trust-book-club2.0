@@ -2,8 +2,10 @@
 // Adds personality, taunts, and banter from AI opponents
 
 document.addEventListener("DOMContentLoaded", () => {
+ window.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("spadesCanvas");
   const ctx = canvas.getContext("2d");
+
   const status = document.getElementById("status");
   const startBtn = document.getElementById("startGame");
 
