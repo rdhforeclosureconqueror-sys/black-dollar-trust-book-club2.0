@@ -29,7 +29,16 @@ function loadVoices() {
     voiceSelect.appendChild(opt);
   });
 }
-window.speechSynthesis.onvoiceschanged = loadVoices;
+// Reliable voice initialization
+function initVoices() {
+  if (synth.getVoices().length === 0) {
+    setTimeout(initVoices, 500);
+  } else {
+    loadVoices();
+  }
+}
+initVoices();
+
 
 // === Upload Book ===
 uploadBtn.addEventListener('click', () => {
