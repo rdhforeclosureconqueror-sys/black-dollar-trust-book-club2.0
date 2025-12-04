@@ -5,15 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Black Dollar Trust Book Club</title>
 
-  <!-- Fonts -->
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Georgia&display=swap" rel="stylesheet" />
 
   <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
-  <!-- Styles -->
+  <!-- EPUB.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.88/epub.min.js"></script>
+
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <!-- HEADER -->
   <header>
@@ -21,12 +25,12 @@
     <p class="subtitle">Pan-African Reading • Knowledge • Growth</p>
   </header>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN BODY -->
   <main>
-    <!-- Upload Section -->
+    <!-- Upload Area -->
     <section class="upload-section">
       <h2>📚 Your Library</h2>
-      <p>Upload PDF, TXT, or EPUB files to begin reading aloud.</p>
+      <p>Upload PDF, TXT, or EPUB files to begin your journey into Pan-African knowledge.</p>
 
       <div class="file-upload">
         <input type="file" id="fileInput" accept=".pdf,.txt,.epub" />
@@ -36,13 +40,13 @@
       <p id="bookList"></p>
     </section>
 
-    <!-- Reader Section -->
+    <!-- Reader Display -->
     <section class="preview-section">
       <h2>📖 Reader</h2>
 
-      <!-- Book Cover + Title Page -->
+      <!-- Title Page -->
       <div id="bookCover" class="book-cover hidden">
-        <h1 id="bookTitle"></h1>
+        <h1 id="bookTitle">Book Title</h1>
         <p id="bookAuthor"></p>
       </div>
 
@@ -53,23 +57,49 @@
       <canvas id="pdfCanvas" class="hidden"></canvas>
 
       <!-- Text Preview -->
-      <div id="textPreview"></div>
+      <div id="textPreview" class="text-preview"></div>
 
       <!-- Reading Progress -->
       <div id="progressContainer">
         <div id="progressBar"></div>
       </div>
 
-      <!-- Page Controls -->
+      <!-- Page Navigation -->
       <div class="page-controls">
         <button id="prevPageBtn">⬅️ Prev Page</button>
         <span id="pageIndicator">Page 1</span>
         <button id="nextPageBtn">Next ➡️</button>
       </div>
 
-      <!-- Continue Reading -->
+      <!-- Resume Progress -->
       <div class="progress-controls">
-        <button id="continueBtn">⏩ Continue Reading</button>
+        <button id="continueBtn" class="hidden">⏩ Continue Reading</button>
+      </div>
+    </section>
+
+    <!-- Reader Settings -->
+    <section id="settingsPanel" class="settings-panel hidden">
+      <h3>🛠️ Reader Settings</h3>
+      <div class="setting">
+        <label for="fontSelect">Font Style:</label>
+        <select id="fontSelect">
+          <option value="Poppins">Poppins</option>
+          <option value="Georgia">Georgia</option>
+          <option value="Times New Roman">Times New Roman</option>
+          <option value="Arial">Arial</option>
+        </select>
+      </div>
+      <div class="setting">
+        <label for="fontSizeSlider">Font Size:</label>
+        <input type="range" id="fontSizeSlider" min="14" max="30" value="18" />
+      </div>
+      <div class="setting">
+        <label for="themeSelect">Theme:</label>
+        <select id="themeSelect">
+          <option value="">Default (Dark Gold)</option>
+          <option value="light-theme">Light (Sepia)</option>
+          <option value="pan-african-theme">Pan-African</option>
+        </select>
       </div>
     </section>
   </main>
@@ -82,12 +112,15 @@
       <button id="pauseBtn">⏸ Pause</button>
       <button id="stopBtn">⏹ Stop</button>
     </div>
+
+    <button id="settingsBtn" class="settings-btn">⚙️ Settings</button>
+
     <p class="footer-text">
       © 2025 Black Dollar Trust Book Club — Pan-African Reading, Knowledge & Growth
     </p>
   </footer>
 
-  <!-- Scripts -->
+  <!-- Reader Script -->
   <script src="reader.js"></script>
 </body>
 </html>
