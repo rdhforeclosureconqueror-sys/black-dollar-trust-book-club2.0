@@ -4,9 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Black Dollar Trust Book Club</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
   <header>
     <h1>Black Dollar Trust Book Club</h1>
@@ -14,36 +21,36 @@
   </header>
 
   <main>
-    <section class="library">
+    <section class="upload-section">
       <h2>📚 Your Library</h2>
       <p>Upload PDF, TXT, or EPUB files to begin reading aloud.</p>
-
-      <input type="file" id="fileInput" accept=".pdf,.txt,.epub" multiple />
-      <button id="uploadBtn">Upload Books</button>
-
-      <div id="bookList"></div>
+      <div class="file-upload">
+        <input type="file" id="fileInput" accept=".pdf,.txt,.epub" />
+        <button id="uploadBtn">Upload Books</button>
+      </div>
+      <p id="bookList"></p>
     </section>
 
-    <section class="preview">
+    <section class="preview-section">
       <h2>📖 Preview</h2>
       <canvas id="pdfCanvas"></canvas>
       <div id="textPreview"></div>
-    </section>
-
-    <section class="controls">
-      <select id="voiceSelect"></select>
-      <button id="readBtn">Read</button>
-      <button id="pauseBtn">Pause</button>
-      <button id="stopBtn">Stop</button>
+      <div class="pdf-controls" id="pdfControls"></div>
     </section>
   </main>
 
   <footer>
-    <p>© 2025 Black Dollar Trust Book Club • Pan-African Voices of Knowledge</p>
+    <div class="voice-controls">
+      <select id="voiceSelect"></select>
+      <button id="readBtn">🔊 Read</button>
+      <button id="pauseBtn">⏸ Pause</button>
+      <button id="stopBtn">⏹ Stop</button>
+    </div>
+    <p class="footer-text">
+      © 2025 Black Dollar Trust Book Club — Pan-African Reading, Knowledge & Growth
+    </p>
   </footer>
 
-  <script src="libs/pdf.min.js"></script>
-  <script src="libs/epub.min.js"></script>
   <script src="reader.js"></script>
 </body>
 </html>
