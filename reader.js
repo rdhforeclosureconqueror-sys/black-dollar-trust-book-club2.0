@@ -137,13 +137,19 @@ nextPageBtn.addEventListener("click", () => {
   if (pdfDoc && currentPage < pdfDoc.numPages) showPage(++currentPage);
 });
 
-// === Voice Reading (Fixed + Fully Reliable) ===
+// === Voice Reading (Stable + Retry + Voice Fallback) ===
 readBtn.addEventListener("click", async () => {
+  if (!pdfDoc && (!currentText || currentText.trim() === "")) {
+    alert("Please upload a readable PDF or TXT book first.");
+    return;
+  }
+
   if (synth.speaking) synth.cancel();
 
-  // Wait until voices are ready
+  // Make sure voices are ready
   let voices = synth.getVoices();
   if (voices.length === 0) {
+    console.warn("Voices not loaded yet — reinitializing...");
     await new Promise((res) => {
       speechSynthesis.onvoiceschanged = () => {
         voices = synth.getVoices();
@@ -151,6 +157,61 @@ readBtn.addEventListener("click", async () => {
       };
     });
   }
+
+  // Get text for current page or full book
+  let textToRead = "";
+  if (pdfDoc) {
+    textToRead = pdfTextPerPage[currentPage - 1] || "";
+  } else {
+    textToRead = currentText;
+  }
+
+  // Sanitize text — remove broken characters
+  textToRead = textToRead.replace(/[^\x20-\x7E\n\r]/g, " ").trim();
+
+  if (!textToRead || textToRead.length < 5) {
+    alert("No readable text detected on this page.");
+    return;
+  }
+
+  const utter = new SpeechSynthesisUtterance(textToRead);
+  let selected = voices.find((v) => v.name === voiceSelect.value);
+
+  // Fallback to a default voice if the selected one is missing
+  if (!selected && voices.length > 0) {
+    console.warn("Selected voice unavailable — using default.");
+    selected = voices[0];
+  }
+
+  utter.voice = selected;
+  utter.rate = 1.0;
+  utter.pitch = 1.0;
+  utter.volume = 1.0;
+
+  // Logging for debug
+  utter.onstart = () => console.log("🎧 Reading started...");
+  utter.onend = () => console.log("✅ Finished reading.");
+  utter.onerror = (err) => {
+    console.error("❌ Speech synthesis error:", err);
+    alert("There was an error starting the voice engine. Retrying...");
+    synth.cancel();
+    setTimeout(() => synth.speak(utter), 500);
+  };
+
+  // Speak only after user interaction — avoids autoplay block
+  synth.cancel();
+  synth.speak(utter);
+});
+
+pauseBtn.addEventListener("click", () => {
+  if (synth.speaking) synth.paused ? synth.resume() : synth.pause();
+});
+
+stopBtn.addEventListener("click", () => {
+  synth.cancel();
+  console.log("🛑 Reading stopped.");
+});
+
 
   // Determine what to read
   let textToRead = "";
