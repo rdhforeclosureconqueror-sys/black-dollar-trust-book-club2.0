@@ -1,0 +1,280 @@
+/* ===========================================
+   Black Dollar Trust Book Club
+   Part 2/3: style.css
+   Dark Pan-African + Gold Rope Shimmer Theme
+=========================================== */
+
+/* Base colors */
+:root {
+  --pan-black: #020617;
+  --pan-red: #ef4444;
+  --pan-green: #22c55e;
+  --pan-gold: #facc15;
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --border-subtle: #1f2937;
+}
+
+/* Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Gold rope shimmer border animation */
+body {
+  background: radial-gradient(circle at top, #0b1120, var(--pan-black));
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Rope Chain Border (animated shimmer) */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border: 12px solid transparent;
+  border-image: url('https://upload.wikimedia.org/wikipedia/commons/3/3d/Gold_chain_pattern.svg') 30 round;
+  animation: shimmer 12s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0%, 95%, 100% { opacity: 1; filter: brightness(1); }
+  45%, 55% { opacity: 1; filter: brightness(1.6); }
+}
+
+/* App container */
+.app {
+  width: 100%;
+  max-width: 1200px;
+  margin: 16px;
+  background: #020617;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(250, 204, 21, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, var(--pan-red), var(--pan-black), var(--pan-green), var(--pan-gold));
+  padding: 10px 16px;
+  flex-wrap: wrap;
+}
+
+.logo-title h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: #fff;
+}
+
+.logo-upload {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.logo-upload img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--pan-gold);
+  object-fit: cover;
+  background: radial-gradient(circle at center, var(--pan-gold), var(--pan-black));
+  transition: transform 0.2s;
+}
+
+.logo-upload img:hover {
+  transform: scale(1.05);
+}
+
+.upload-hint {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Main layout */
+.main {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+}
+
+.reader-panel, .game-panel {
+  flex: 1;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reader-panel {
+  border-right: 1px solid var(--border-subtle);
+}
+
+/* Texts */
+.panel-subtext {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Upload section */
+.upload-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.file-btn {
+  background: linear-gradient(135deg, var(--pan-green), var(--pan-gold));
+  color: var(--pan-black);
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 3px 10px rgba(34, 197, 94, 0.5);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+
+.file-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(250, 204, 21, 0.3);
+}
+
+#uploadStatus {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Book list */
+.book-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  background: #0b1120;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  padding: 6px;
+}
+
+.book-list div {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  color: var(--text-main);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s, border 0.1s;
+}
+
+.book-list div:hover {
+  background: #111827;
+  border: 1px solid var(--pan-green);
+}
+
+.book-list div.active {
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid var(--pan-green);
+}
+
+/* Reader controls */
+.reader-controls {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.voice-select, button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: #111827;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e293b;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Preview area */
+.preview-area {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: #020617;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#pdfCanvas {
+  display: none;
+  width: 100%;
+  height: auto;
+}
+
+#textPreview {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 8px;
+  overflow-y: auto;
+  color: var(--text-main);
+  white-space: pre-wrap;
+}
+
+/* Game panel */
+.game-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+
+/* Responsive */
+@media (max-width: 900px) {
+  .main {
+    flex-direction: column;
+  }
+  .reader-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+}
+
+@media (max-width: 480px) {
+  .logo-title h1 {
+    font-size: 1rem;
+  }
+  .subtitle {
+    font-size: 0.7rem;
+  }
+}
