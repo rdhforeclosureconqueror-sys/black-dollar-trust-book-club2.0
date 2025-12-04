@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Black Dollar Trust Spades — Legacy Table</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- 3D + Sound Libraries -->
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="spades.css" />
+</head>
+<body>
+  <div class="table-frame">
+    <header class="header">
+      <h1>Black Dollar Trust Spades: Legacy Table</h1>
+      <span class="subtext">♠ Pan-African Card Experience ♠</span>
+    </header>
+
+    <div class="game-ui">
+      <div class="difficulty-panel">
+        <button id="easyMode" class="mode-btn easy">Friendly Table</button>
+        <button id="hardMode" class="mode-btn hard">Family Cookout</button>
+        <button id="startGame" class="start-btn">Start Game</button>
+      </div>
+
+      <div id="scoreboard">
+        <div class="team">
+          <span class="team-name">You & Partner</span>
+          <span class="team-score" id="team1Score">0</span>
+        </div>
+        <div class="team">
+          <span class="team-name">Opponents</span>
+          <span class="team-score" id="team2Score">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="spadesContainer">
+      <canvas id="spades3D"></canvas>
+
+      <!-- Avatars -->
+      <div class="avatar avatar-player">P1<br><span class="label">You</span></div>
+      <div class="avatar avatar-partner">P2<br><span class="label">Partner</span></div>
+      <div class="avatar avatar-ai1">A1<br><span class="label">Opponent</span></div>
+      <div class="avatar avatar-ai2">A2<br><span class="label">Opponent</span></div>
+
+      <!-- Speech Bubbles -->
+      <div class="bubble" id="bubbleP2"></div>
+      <div class="bubble" id="bubbleA1"></div>
+      <div class="bubble" id="bubbleA2"></div>
+
+      <!-- Deck and Card Area -->
+      <div class="deck" id="deckZone">♠</div>
+      <div class="player-hand" id="playerHand"></div>
+    </div>
+  </div>
+
+  <script src="spades.js"></script>
+</body>
+</html>
