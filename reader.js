@@ -1,82 +1,97 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const bookInput = document.getElementById("bookInput");
-  const uploadBtn = document.getElementById("uploadBtn");
-  const bookPreview = document.getElementById("bookPreview");
-  const voiceSelect = document.getElementById("voiceSelect");
-  const readBtn = document.getElementById("readBtn");
-  const pauseBtn = document.getElementById("pauseBtn");
-  const stopBtn = document.getElementById("stopBtn");
+const fileInput = document.getElementById('fileInput');
+const uploadBtn = document.getElementById('uploadBtn');
+const bookList = document.getElementById('bookList');
+const pdfCanvas = document.getElementById('pdfCanvas');
+const textPreview = document.getElementById('textPreview');
+const voiceSelect = document.getElementById('voiceSelect');
+const readBtn = document.getElementById('readBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const stopBtn = document.getElementById('stopBtn');
 
-  let synth = window.speechSynthesis;
-  let currentUtterance = null;
-  let currentText = "";
+let currentText = '';
+let currentUtterance;
+const synth = window.speechSynthesis;
 
-  // ✅ Voice Initialization
-  function loadVoices() {
-    const voices = synth.getVoices();
-    voiceSelect.innerHTML = "";
-    voices.forEach(v => {
-      const opt = document.createElement("option");
-      opt.value = v.name;
-      opt.textContent = `${v.name} (${v.lang})`;
-      voiceSelect.appendChild(opt);
-    });
-  }
-  loadVoices();
-  if (speechSynthesis.onvoiceschanged !== undefined)
-    speechSynthesis.onvoiceschanged = loadVoices;
+// Populate voices
+function populateVoices() {
+  voiceSelect.innerHTML = '';
+  const voices = synth.getVoices();
+  voices.forEach(v => {
+    const option = document.createElement('option');
+    option.textContent = `${v.name} (${v.lang})`;
+    voiceSelect.appendChild(option);
+  });
+}
 
-  // ✅ File Upload
-  uploadBtn.onclick = () => {
-    const file = bookInput.files[0];
-    if (!file) return alert("Please select a file first.");
+populateVoices();
+synth.onvoiceschanged = populateVoices;
+
+// Handle uploads
+uploadBtn.onclick = () => {
+  const files = fileInput.files;
+  if (!files.length) return alert('Please select a file.');
+
+  Array.from(files).forEach(file => {
+    const li = document.createElement('li');
+    li.textContent = file.name;
+    bookList.appendChild(li);
 
     const reader = new FileReader();
-    if (file.name.endsWith(".txt")) {
+
+    if (file.name.endsWith('.txt')) {
       reader.onload = e => {
         currentText = e.target.result;
-        bookPreview.textContent = currentText.slice(0, 2000);
+        textPreview.textContent = currentText.substring(0, 1000) + '...';
       };
       reader.readAsText(file);
-    } else if (file.name.endsWith(".pdf")) {
-      reader.onload = async e => {
-        const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
-        let text = "";
-        for (let i = 1; i <= pdf.numPages; i++) {
-          const page = await pdf.getPage(i);
-          const content = await page.getTextContent();
-          text += content.items.map(it => it.str).join(" ") + "\n";
-        }
-        currentText = text;
-        bookPreview.textContent = text.slice(0, 2000);
-      };
-      reader.readAsArrayBuffer(file);
-    } else if (file.name.endsWith(".epub")) {
+
+    } else if (file.name.endsWith('.pdf')) {
       reader.onload = e => {
-        const book = ePub(e.target.result);
-        book.ready.then(() => {
-          book.section(0).render().then(output => {
-            currentText = output;
-            bookPreview.textContent = output.slice(0, 2000);
+        const pdfData = new Uint8Array(e.target.result);
+        pdfjsLib.getDocument({ data: pdfData }).promise.then(pdf => {
+          pdf.getPage(1).then(page => {
+            const viewport = page.getViewport({ scale: 1.5 });
+            const ctx = pdfCanvas.getContext('2d');
+            pdfCanvas.height = viewport.height;
+            pdfCanvas.width = viewport.width;
+            page.render({ canvasContext: ctx, viewport: viewport });
           });
         });
       };
       reader.readAsArrayBuffer(file);
-    } else {
-      alert("Unsupported file type.");
+
+    } else if (file.name.endsWith('.epub')) {
+      reader.onload = e => {
+        const book = ePub(e.target.result);
+        book.ready.then(() => {
+          book.loaded.spine.then(spine => {
+            spine.each(item => {
+              item.render().then(section => {
+                currentText = section.output;
+                textPreview.innerHTML = section.output.substring(0, 1000) + '...';
+              });
+            });
+          });
+        });
+      };
+      reader.readAsArrayBuffer(file);
     }
-  };
+  });
+};
 
-  // ✅ Voice Controls
-  readBtn.onclick = () => {
-    if (!currentText) return alert("Please upload a book first.");
-    if (synth.speaking) synth.cancel();
+// Voice controls
+readBtn.onclick = () => {
+  if (!currentText) return;
+  if (synth.speaking) synth.cancel();
 
-    currentUtterance = new SpeechSynthesisUtterance(currentText);
-    currentUtterance.voice = synth.getVoices().find(v => v.name === voiceSelect.value);
-    synth.speak(currentUtterance);
-  };
+  currentUtterance = new SpeechSynthesisUtterance(currentText);
+  const selectedVoice = voiceSelect.value;
+  const voices = synth.getVoices();
+  const voice = voices.find(v => `${v.name} (${v.lang})` === selectedVoice);
+  if (voice) currentUtterance.voice = voice;
 
-  pauseBtn.onclick = () => synth.pause();
-  stopBtn.onclick = () => synth.cancel();
-});
+  synth.speak(currentUtterance);
+};
+
+pauseBtn.onclick = () => synth.pause();
+stopBtn.onclick = () => synth.cancel();
