@@ -1,7 +1,8 @@
-// === Black Dollar Trust Reader Pro v3.0 ===
-// Author: Pan-African Development Edition
+// === Black Dollar Trust Reader Pro v3.6 (Stable) ===
+// Author: Pan-African Digital Learning Initiative
+// Features: PDF + TXT + EPUB | Voice | TOC | Progress | Resume | Themes | Fonts
 
-// DOM Elements
+// === DOM References ===
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
 const bookList = document.getElementById("bookList");
@@ -18,27 +19,39 @@ const prevPageBtn = document.getElementById("prevPageBtn");
 const nextPageBtn = document.getElementById("nextPageBtn");
 const pageIndicator = document.getElementById("pageIndicator");
 
-// PDF.js Config
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settingsPanel");
+const fontSelect = document.getElementById("fontSelect");
+const fontSizeSlider = document.getElementById("fontSizeSlider");
+const themeSelect = document.getElementById("themeSelect");
+
+// === PDF.js Setup ===
 if (window["pdfjsLib"]) {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 }
 
-// EPUB.js Script Loader
-const epubScript = document.createElement("script");
-epubScript.src = "https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.88/epub.min.js";
-document.head.appendChild(epubScript);
+// === EPUB.js Loader (ensure loaded before use) ===
+let epubReady = false;
+(function loadEpubLib() {
+  const script = document.createElement("script");
+  script.src = "https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.88/epub.min.js";
+  script.onload = () => {
+    epubReady = true;
+    console.log("EPUB.js loaded successfully.");
+  };
+  document.head.appendChild(script);
+})();
 
-// Core Variables
+// === State ===
 let currentText = "";
 let currentBook = "";
 let pdfDoc = null;
+let epubBook = null;
 let currentPage = 1;
 let synth = window.speechSynthesis;
-let bookType = "";
-let epubBook = null;
 
-// === Load Voices ===
+// === Voices ===
 function loadVoices() {
   const voices = synth.getVoices();
   voiceSelect.innerHTML = "";
@@ -58,45 +71,46 @@ function initVoices() {
 }
 initVoices();
 
-// === Upload Book ===
-uploadBtn.addEventListener("click", () => {
+// === File Upload ===
+uploadBtn?.addEventListener("click", async () => {
   const file = fileInput.files[0];
-  if (!file) return alert("Please select a book file to upload.");
+  if (!file) return alert("Please select a book file first.");
 
   const ext = file.name.split(".").pop().toLowerCase();
   const reader = new FileReader();
+
   currentBook = file.name;
-  bookType = ext;
 
   if (ext === "txt") {
     reader.onload = () => showText(reader.result, file.name);
     reader.readAsText(file);
   } else if (ext === "pdf") {
-    reader.onload = () => renderPDFText(reader.result, file.name);
+    reader.onload = () => renderPDF(reader.result, file.name);
     reader.readAsArrayBuffer(file);
   } else if (ext === "epub") {
+    if (!epubReady) {
+      alert("EPUB library is still loading. Please wait a moment and try again.");
+      return;
+    }
     renderEPUB(file);
   } else {
-    alert("Unsupported file type. Please upload a PDF, TXT, or EPUB file.");
+    alert("Unsupported file type. Upload PDF, TXT, or EPUB only.");
   }
 });
 
-// === Show Text (for TXT or PDF extracted text) ===
+// === Text Books ===
 function showText(content, name) {
   bookList.textContent = `📘 Loaded: ${name}`;
   currentText = content.trim();
   textPreview.innerHTML = formatBookText(content);
   textPreview.style.display = "block";
   pdfCanvas.style.display = "none";
-
-  // Generate Table of Contents (headings detection)
   generateTOC(content);
 
   const savedScroll = localStorage.getItem(`${name}-scroll`);
   continueBtn.style.display = savedScroll ? "block" : "none";
 }
 
-// === Format Text into Paragraphs ===
 function formatBookText(text) {
   const paragraphs = text
     .split(/\n\s*\n/)
@@ -105,72 +119,75 @@ function formatBookText(text) {
   return `<div class="book-page">${paragraphs}</div>`;
 }
 
-// === PDF Handling ===
-async function renderPDFText(data, filename) {
-  textPreview.textContent = "Extracting PDF text...";
+// === PDF Rendering ===
+async function renderPDF(data, filename) {
   const loadingTask = pdfjsLib.getDocument({ data });
   pdfDoc = await loadingTask.promise;
-
-  let allText = "";
-  for (let i = 1; i <= pdfDoc.numPages; i++) {
-    const page = await pdfDoc.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items.map((item) => item.str).join(" ");
-    allText += "\n\n" + pageText;
-  }
-
-  showText(allText, filename);
-  pdfCanvas.style.display = "none";
-  textPreview.style.display = "block";
+  currentPage = 1;
+  showPage(currentPage);
   pageIndicator.textContent = `Page 1 of ${pdfDoc.numPages}`;
 }
 
-// === EPUB Handling ===
-function renderEPUB(file) {
-  textPreview.textContent = "Loading EPUB...";
-  const book = ePub(URL.createObjectURL(file));
-  epubBook = book;
+async function showPage(num) {
+  if (!pdfDoc) return;
+  const page = await pdfDoc.getPage(num);
+  const viewport = page.getViewport({ scale: 1.5 });
+  const ctx = pdfCanvas.getContext("2d");
 
-  book.ready
-    .then(() => {
-      tocDiv.classList.remove("hidden");
-      tocDiv.innerHTML = "<h3>Table of Contents</h3>";
+  pdfCanvas.height = viewport.height;
+  pdfCanvas.width = viewport.width;
 
-      book.loaded.navigation.then((nav) => {
-        nav.toc.forEach((chapter) => {
-          const item = document.createElement("div");
-          item.classList.add("toc-item");
-          item.textContent = chapter.label;
-          item.addEventListener("click", () => {
-            book.rendition.display(chapter.href);
-          });
-          tocDiv.appendChild(item);
-        });
-      });
-
-      const rendition = book.renderTo("textPreview", {
-        width: "100%",
-        height: "80vh",
-      });
-      rendition.display();
-
-      currentBook = file.name;
-      localStorage.setItem("currentBookType", "epub");
-    })
-    .catch((err) => console.error("EPUB load error:", err));
+  await page.render({ canvasContext: ctx, viewport }).promise;
+  pdfCanvas.style.display = "block";
+  textPreview.style.display = "none";
+  pageIndicator.textContent = `Page ${num} of ${pdfDoc.numPages}`;
 }
 
-// === Table of Contents Generator (for TXT/PDF) ===
+prevPageBtn?.addEventListener("click", () => {
+  if (currentPage <= 1) return;
+  showPage(--currentPage);
+});
+nextPageBtn?.addEventListener("click", () => {
+  if (pdfDoc && currentPage < pdfDoc.numPages) showPage(++currentPage);
+});
+
+// === EPUB Rendering ===
+function renderEPUB(file) {
+  textPreview.textContent = "Loading EPUB...";
+  epubBook = ePub(URL.createObjectURL(file));
+  epubBook.ready.then(() => {
+    const rendition = epubBook.renderTo("textPreview", {
+      width: "100%",
+      height: "80vh",
+    });
+    rendition.display();
+
+    // TOC
+    tocDiv.classList.remove("hidden");
+    epubBook.loaded.navigation.then((nav) => {
+      tocDiv.innerHTML = "<h3>Table of Contents</h3>";
+      nav.toc.forEach((chapter) => {
+        const item = document.createElement("div");
+        item.classList.add("toc-item");
+        item.textContent = chapter.label;
+        item.addEventListener("click", () => rendition.display(chapter.href));
+        tocDiv.appendChild(item);
+      });
+    });
+  });
+}
+
+// === Generate TOC for TXT/PDF ===
 function generateTOC(content) {
   tocDiv.innerHTML = "<h3>Table of Contents</h3>";
   tocDiv.classList.remove("hidden");
-  const lines = content.split("\n").filter((line) => line.trim().length > 0);
+  const lines = content.split("\n").filter((l) => l.trim().length > 0);
 
   lines.forEach((line, index) => {
-    if (line.length < 60 && /[A-Z]/.test(line[0])) {
+    if (line.length < 70 && /^[A-Z]/.test(line.trim())) {
       const item = document.createElement("div");
       item.classList.add("toc-item");
-      item.textContent = line.slice(0, 50);
+      item.textContent = line.slice(0, 60);
       item.addEventListener("click", () => {
         const paragraphs = textPreview.querySelectorAll("p");
         if (paragraphs[index]) {
@@ -182,8 +199,8 @@ function generateTOC(content) {
   });
 }
 
-// === Reading Progress Tracking ===
-textPreview.addEventListener("scroll", () => {
+// === Reading Progress ===
+textPreview?.addEventListener("scroll", () => {
   const scrollTop = textPreview.scrollTop;
   const scrollHeight = textPreview.scrollHeight - textPreview.clientHeight;
   const progress = (scrollTop / scrollHeight) * 100;
@@ -193,77 +210,50 @@ textPreview.addEventListener("scroll", () => {
   }
 });
 
-continueBtn.addEventListener("click", () => {
+continueBtn?.addEventListener("click", () => {
   const savedScroll = localStorage.getItem(`${currentBook}-scroll`);
   if (savedScroll) {
     textPreview.scrollTo({ top: parseFloat(savedScroll), behavior: "smooth" });
   }
 });
 
-// === Voice Controls ===
-readBtn.onclick = () => {
+// === Voice Reading ===
+readBtn?.addEventListener("click", () => {
   if (!currentText) return alert("Please upload a readable file first.");
   if (synth.speaking) synth.cancel();
 
-  const utterance = new SpeechSynthesisUtterance(currentText);
+  const utter = new SpeechSynthesisUtterance(currentText);
   const selected = synth.getVoices().find((v) => v.name === voiceSelect.value);
-  if (selected) utterance.voice = selected;
-  synth.speak(utterance);
-};
-pauseBtn.onclick = () =>
-  synth.speaking && (synth.paused ? synth.resume() : synth.pause());
-stopBtn.onclick = () => synth.cancel();
-
-// === Page Navigation for PDFs ===
-async function showPage(num) {
-  if (!pdfDoc) return;
-  const page = await pdfDoc.getPage(num);
-  const viewport = page.getViewport({ scale: 1.5 });
-  const ctx = pdfCanvas.getContext("2d");
-
-  pdfCanvas.height = viewport.height;
-  pdfCanvas.width = viewport.width;
-  await page.render({ canvasContext: ctx, viewport }).promise;
-
-  pageIndicator.textContent = `Page ${num} of ${pdfDoc.numPages}`;
-  currentPage = num;
-}
-prevPageBtn.addEventListener("click", () => {
-  if (currentPage <= 1) return;
-  showPage(--currentPage);
+  if (selected) utter.voice = selected;
+  synth.speak(utter);
 });
-nextPageBtn.addEventListener("click", () => {
-  if (currentPage >= pdfDoc.numPages) return;
-  showPage(++currentPage);
+pauseBtn?.addEventListener("click", () => {
+  if (synth.speaking) synth.paused ? synth.resume() : synth.pause();
 });
+stopBtn?.addEventListener("click", () => synth.cancel());
 
-// === Settings Controls (Themes, Fonts, Sizes) ===
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsPanel = document.getElementById("settingsPanel");
-const fontSelect = document.getElementById("fontSelect");
-const fontSizeSlider = document.getElementById("fontSizeSlider");
-const themeSelect = document.getElementById("themeSelect");
-
-settingsBtn.addEventListener("click", () => {
+// === Theme & Font Controls ===
+settingsBtn?.addEventListener("click", () => {
   settingsPanel.classList.toggle("hidden");
 });
-fontSelect.addEventListener("change", () => {
+fontSelect?.addEventListener("change", () => {
   textPreview.style.fontFamily = fontSelect.value;
   localStorage.setItem("fontStyle", fontSelect.value);
 });
-fontSizeSlider.addEventListener("input", () => {
+fontSizeSlider?.addEventListener("input", () => {
   textPreview.style.fontSize = `${fontSizeSlider.value}px`;
   localStorage.setItem("fontSize", fontSizeSlider.value);
 });
-themeSelect.addEventListener("change", () => {
+themeSelect?.addEventListener("change", () => {
   document.body.className = themeSelect.value;
   localStorage.setItem("theme", themeSelect.value);
 });
+
+// === Restore Saved Preferences ===
 window.addEventListener("load", () => {
   const savedFont = localStorage.getItem("fontStyle");
   const savedSize = localStorage.getItem("fontSize");
   const savedTheme = localStorage.getItem("theme");
-
   if (savedFont) {
     textPreview.style.fontFamily = savedFont;
     fontSelect.value = savedFont;
