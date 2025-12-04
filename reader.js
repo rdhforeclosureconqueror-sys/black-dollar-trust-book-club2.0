@@ -1,5 +1,6 @@
-// === Black Dollar Trust Reader v4.1 ===
-// PDF + TXT Reader with Full Working Text-to-Speech, Mobile Friendly
+// === Black Dollar Trust Smart Reader v5.0 ===
+// PDF + TXT Reader with AI Sentence Processing and Natural Speech
+// Works fully in browser (GitHub Pages & Mobile Compatible)
 
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
@@ -19,13 +20,14 @@ const fontSelect = document.getElementById("fontSelect");
 const fontSizeSlider = document.getElementById("fontSizeSlider");
 const themeSelect = document.getElementById("themeSelect");
 const bookTitle = document.getElementById("bookTitle");
+const smartMode = document.getElementById("smartMode");
 
 let pdfDoc = null;
 let currentText = "";
 let currentBook = "";
 let currentPage = 1;
-let synth = window.speechSynthesis;
 let pdfTextPerPage = [];
+let synth = window.speechSynthesis;
 
 // === Initialize Voices ===
 function loadVoices() {
@@ -38,7 +40,6 @@ function loadVoices() {
     voiceSelect.appendChild(opt);
   });
 }
-
 function initVoices() {
   if (synth.getVoices().length === 0) {
     setTimeout(initVoices, 500);
@@ -135,72 +136,74 @@ nextPageBtn.addEventListener("click", () => {
   if (pdfDoc && currentPage < pdfDoc.numPages) showPage(++currentPage);
 });
 
-// === Voice Reading (Stable + Mobile Friendly) ===
+// === Smart AI Reading ===
 readBtn.addEventListener("click", async () => {
-  if (!pdfDoc && (!currentText || currentText.trim() === "")) {
-    alert("Please upload a readable PDF or TXT book first.");
-    return;
-  }
-
-  if (synth.speaking) synth.cancel();
-
-  // Wait for voices
-  let voices = synth.getVoices();
-  if (voices.length === 0) {
-    await new Promise((res) => {
-      speechSynthesis.onvoiceschanged = () => {
-        voices = synth.getVoices();
-        res();
-      };
-    });
-  }
-
   let textToRead = pdfDoc
     ? pdfTextPerPage[currentPage - 1] || ""
-    : currentText || "";
+    : currentText;
 
-  textToRead = textToRead.replace(/[^\x20-\x7E\n\r]/g, " ").trim();
-  if (!textToRead || textToRead.length < 5) {
-    alert("No readable text detected on this page.");
+  if (!textToRead.trim()) {
+    alert("Please upload a readable book first.");
     return;
   }
 
-  const utter = new SpeechSynthesisUtterance(textToRead);
-  let selected = voices.find((v) => v.name === voiceSelect.value);
-  if (!selected && voices.length > 0) selected = voices[0];
-  utter.voice = selected;
-  utter.rate = 1.0;
-  utter.pitch = 1.0;
-  utter.volume = 1.0;
+  // Clean and normalize text
+  textToRead = textToRead
+    .replace(/\s+/g, " ")
+    .replace(/\b([A-Z])\s(?=[A-Z])/g, "$1")
+    .replace(/[^\x20-\x7E\n\r]/g, " ")
+    .trim();
 
-  utter.onstart = () => console.log("🎧 Reading started...");
-  utter.onend = () => console.log("✅ Finished reading.");
-  utter.onerror = (err) => {
-    console.error("❌ Speech synthesis error:", err);
+  if (smartMode && smartMode.checked) {
+    console.log("🧠 Smart Reading mode active...");
+
+    // Split into sentences
+    const sentences = textToRead.match(/[^.!?]+[.!?]+/g) || [textToRead];
+
+    for (let sentence of sentences) {
+      const cleanSentence =
+        sentence.charAt(0).toUpperCase() + sentence.slice(1).trim();
+
+      await new Promise((resolve) => {
+        responsiveVoice.speak(cleanSentence, "UK English Male", {
+          rate: 0.95,
+          pitch: 1,
+          onend: resolve,
+        });
+      });
+    }
+  } else {
+    console.log("🔊 Basic reading mode...");
+    const utter = new SpeechSynthesisUtterance(textToRead);
+    const voices = synth.getVoices();
+    let selected = voices.find((v) => v.name === voiceSelect.value);
+    if (!selected && voices.length > 0) selected = voices[0];
+    utter.voice = selected;
+    utter.rate = 1;
+    utter.pitch = 1;
     synth.cancel();
-    setTimeout(() => synth.speak(utter), 800);
-  };
-
-  synth.cancel();
-  synth.speak(utter);
+    synth.speak(utter);
+  }
 });
 
+// === Pause / Resume / Stop ===
 pauseBtn.addEventListener("click", () => {
-  if (synth.speaking) synth.paused ? synth.resume() : synth.pause();
+  if (responsiveVoice.isPlaying()) responsiveVoice.pause();
+  else if (synth.speaking) synth.paused ? synth.resume() : synth.pause();
 });
 
 stopBtn.addEventListener("click", () => {
+  if (responsiveVoice.isPlaying()) responsiveVoice.cancel();
   synth.cancel();
-  console.log("🛑 Reading stopped.");
 });
 
-// === Font, Size, Theme Controls ===
-fontSelect.addEventListener("change", () => {
+// === Font, Size, Theme ===
+fontSelect?.addEventListener("change", () => {
   textPreview.style.fontFamily = fontSelect.value;
 });
-fontSizeSlider.addEventListener("input", () => {
+fontSizeSlider?.addEventListener("input", () => {
   textPreview.style.fontSize = `${fontSizeSlider.value}px`;
 });
-themeSelect.addEventListener("change", () => {
+themeSelect?.addEventListener("change", () => {
   document.body.className = themeSelect.value;
 });
