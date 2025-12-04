@@ -33,23 +33,23 @@
       <p id="bookList"></p>
     </section>
 
-    <!-- Reader Section -->
-    <section class="reader-section">
-      <h2>📖 Book Preview</h2>
-      <canvas id="pdfCanvas"></canvas>
-      <div id="textPreview" class="text-preview"></div>
+   <!-- Reader Section -->
+<section class="reader-section">
+  <h2 id="bookTitle">📖 Book Preview</h2>
+  <canvas id="pdfCanvas"></canvas>
+  <div id="textPreview" class="text-preview" contenteditable="false"></div>
 
-      <!-- Progress -->
-      <div id="progressContainer">
-        <div id="progressBar"></div>
-      </div>
+  <div id="progressContainer"><div id="progressBar"></div></div>
 
-      <!-- Page Controls -->
-      <div class="page-controls">
-        <button id="prevPageBtn">⬅️ Prev</button>
-        <span id="pageIndicator">Page 1</span>
-        <button id="nextPageBtn">Next ➡️</button>
-      </div>
+  <div class="page-controls">
+    <button id="prevPageBtn">⬅️ Prev</button>
+    <span id="pageIndicator">Page 1</span>
+    <button id="nextPageBtn">Next ➡️</button>
+  </div>
+
+  <button id="continueBtn" class="hidden">⏩ Continue Reading</button>
+</section>
+
 
       <!-- Continue -->
       <button id="continueBtn" class="hidden">⏩ Continue Reading</button>
