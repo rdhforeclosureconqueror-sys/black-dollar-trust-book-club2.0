@@ -11,100 +11,51 @@
   <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
-  <!-- EPUB.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/epub.js/0.3.88/epub.min.js"></script>
-
-  <!-- Stylesheet -->
+  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <!-- HEADER -->
   <header>
     <h1>Black Dollar Trust Book Club</h1>
     <p class="subtitle">Pan-African Reading • Knowledge • Growth</p>
   </header>
 
-  <!-- MAIN BODY -->
   <main>
-    <!-- Upload Area -->
+    <!-- Upload Section -->
     <section class="upload-section">
       <h2>📚 Your Library</h2>
-      <p>Upload PDF, TXT, or EPUB files to begin your journey into Pan-African knowledge.</p>
-
+      <p>Upload PDF or TXT books to read and listen.</p>
       <div class="file-upload">
-        <input type="file" id="fileInput" accept=".pdf,.txt,.epub" />
-        <button id="uploadBtn">Upload Books</button>
+        <input type="file" id="fileInput" accept=".pdf,.txt" />
+        <button id="uploadBtn">Upload Book</button>
       </div>
-
       <p id="bookList"></p>
     </section>
 
-    <!-- Reader Display -->
-    <section class="preview-section">
-      <h2>📖 Reader</h2>
-
-      <!-- Title Page -->
-      <div id="bookCover" class="book-cover hidden">
-        <h1 id="bookTitle">Book Title</h1>
-        <p id="bookAuthor"></p>
-      </div>
-
-      <!-- Table of Contents -->
-      <div id="toc" class="toc hidden"></div>
-
-      <!-- PDF Canvas -->
-      <canvas id="pdfCanvas" class="hidden"></canvas>
-
-      <!-- Text Preview -->
+    <!-- Reader Section -->
+    <section class="reader-section">
+      <h2>📖 Book Preview</h2>
+      <canvas id="pdfCanvas"></canvas>
       <div id="textPreview" class="text-preview"></div>
 
-      <!-- Reading Progress -->
+      <!-- Progress -->
       <div id="progressContainer">
         <div id="progressBar"></div>
       </div>
 
-      <!-- Page Navigation -->
+      <!-- Page Controls -->
       <div class="page-controls">
-        <button id="prevPageBtn">⬅️ Prev Page</button>
+        <button id="prevPageBtn">⬅️ Prev</button>
         <span id="pageIndicator">Page 1</span>
         <button id="nextPageBtn">Next ➡️</button>
       </div>
 
-      <!-- Resume Progress -->
-      <div class="progress-controls">
-        <button id="continueBtn" class="hidden">⏩ Continue Reading</button>
-      </div>
-    </section>
-
-    <!-- Reader Settings -->
-    <section id="settingsPanel" class="settings-panel hidden">
-      <h3>🛠️ Reader Settings</h3>
-      <div class="setting">
-        <label for="fontSelect">Font Style:</label>
-        <select id="fontSelect">
-          <option value="Poppins">Poppins</option>
-          <option value="Georgia">Georgia</option>
-          <option value="Times New Roman">Times New Roman</option>
-          <option value="Arial">Arial</option>
-        </select>
-      </div>
-      <div class="setting">
-        <label for="fontSizeSlider">Font Size:</label>
-        <input type="range" id="fontSizeSlider" min="14" max="30" value="18" />
-      </div>
-      <div class="setting">
-        <label for="themeSelect">Theme:</label>
-        <select id="themeSelect">
-          <option value="">Default (Dark Gold)</option>
-          <option value="light-theme">Light (Sepia)</option>
-          <option value="pan-african-theme">Pan-African</option>
-        </select>
-      </div>
+      <!-- Continue -->
+      <button id="continueBtn" class="hidden">⏩ Continue Reading</button>
     </section>
   </main>
 
-  <!-- FOOTER -->
   <footer>
     <div class="voice-controls">
       <select id="voiceSelect"></select>
@@ -113,14 +64,30 @@
       <button id="stopBtn">⏹ Stop</button>
     </div>
 
-    <button id="settingsBtn" class="settings-btn">⚙️ Settings</button>
+    <div class="reader-settings">
+      <label>Font:</label>
+      <select id="fontSelect">
+        <option value="Poppins">Poppins</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Arial">Arial</option>
+      </select>
+
+      <label>Size:</label>
+      <input type="range" id="fontSizeSlider" min="14" max="28" value="18" />
+
+      <label>Theme:</label>
+      <select id="themeSelect">
+        <option value="">Default</option>
+        <option value="light-theme">Light</option>
+        <option value="sepia-theme">Sepia</option>
+      </select>
+    </div>
 
     <p class="footer-text">
       © 2025 Black Dollar Trust Book Club — Pan-African Reading, Knowledge & Growth
     </p>
   </footer>
 
-  <!-- Reader Script -->
   <script src="reader.js"></script>
 </body>
 </html>
