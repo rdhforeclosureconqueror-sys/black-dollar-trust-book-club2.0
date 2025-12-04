@@ -96,5 +96,5 @@ stopBtn.onclick = () => synth.cancel();
 
 // Navigate to game
 document.getElementById("playSpadesBtn").onclick = () => {
-  window.location.href = "spades/spades.html";
+  window.location.href = "spades.html";
 };
