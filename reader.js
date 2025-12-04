@@ -1,4 +1,5 @@
-// === Black Dollar Trust Reader v3.5 (PDF + TXT, Full Voice + Chapters) ===
+// === Black Dollar Trust Reader v4.0 ===
+// PDF + TXT Reader with Full Working Text-to-Speech
 
 const fileInput = document.getElementById("fileInput");
 const uploadBtn = document.getElementById("uploadBtn");
@@ -25,24 +26,29 @@ let currentBook = "";
 let currentPage = 1;
 let synth = window.speechSynthesis;
 let pdfTextPerPage = [];
+let currentUtterance = null;
 
-// === Voices ===
+// === Initialize Voices ===
 function loadVoices() {
   const voices = synth.getVoices();
   voiceSelect.innerHTML = "";
-  voices.forEach(v => {
+  voices.forEach((v) => {
     const opt = document.createElement("option");
     opt.value = v.name;
     opt.textContent = `${v.name} (${v.lang})`;
     voiceSelect.appendChild(opt);
   });
 }
+
 function initVoices() {
   if (synth.getVoices().length === 0) {
     setTimeout(initVoices, 500);
-  } else loadVoices();
+  } else {
+    loadVoices();
+  }
 }
 initVoices();
+speechSynthesis.onvoiceschanged = loadVoices;
 
 // === Upload Book ===
 uploadBtn.addEventListener("click", () => {
@@ -68,10 +74,17 @@ uploadBtn.addEventListener("click", () => {
 // === TXT Render ===
 function showText(content, name) {
   bookList.textContent = `📘 Loaded: ${name}`;
-  currentText = content;
+  currentText = content.trim();
   textPreview.innerHTML = formatBookText(content);
   pdfCanvas.style.display = "none";
   textPreview.style.display = "block";
+}
+
+function formatBookText(text) {
+  return text
+    .split(/\n\s*\n/)
+    .map((p) => `<p>${p.trim()}</p>`)
+    .join("");
 }
 
 // === PDF Render + Text Extraction ===
@@ -85,11 +98,11 @@ async function loadAndRenderPDF(data, filename) {
   pdfTextPerPage = [];
   bookList.textContent = `📗 Loaded PDF: ${filename}`;
 
-  // Extract text from all pages for reading aloud
+  // Extract text for speech synthesis
   for (let i = 1; i <= pdfDoc.numPages; i++) {
     const page = await pdfDoc.getPage(i);
     const content = await page.getTextContent();
-    const text = content.items.map(item => item.str).join(" ");
+    const text = content.items.map((item) => item.str).join(" ");
     pdfTextPerPage.push(text);
   }
 
@@ -97,6 +110,7 @@ async function loadAndRenderPDF(data, filename) {
   showPage(currentPage);
 }
 
+// === PDF Display ===
 async function showPage(num) {
   if (!pdfDoc) return;
   const page = await pdfDoc.getPage(num);
@@ -107,13 +121,14 @@ async function showPage(num) {
   pdfCanvas.width = viewport.width;
 
   await page.render({ canvasContext: ctx, viewport }).promise;
-  textPreview.innerHTML = `<p>${pdfTextPerPage[num - 1]}</p>`;
+  textPreview.innerHTML = `<p>${pdfTextPerPage[num - 1] || ""}</p>`;
   pageIndicator.textContent = `Page ${num} of ${pdfDoc.numPages}`;
 
   pdfCanvas.style.display = "block";
   textPreview.style.display = "block";
 }
 
+// === Page Navigation ===
 prevPageBtn.addEventListener("click", () => {
   if (currentPage <= 1) return;
   showPage(--currentPage);
@@ -122,16 +137,11 @@ nextPageBtn.addEventListener("click", () => {
   if (pdfDoc && currentPage < pdfDoc.numPages) showPage(++currentPage);
 });
 
-// === Voice Reading (Improved + Page-Aware) ===
+// === Voice Reading (Fixed + Fully Reliable) ===
 readBtn.addEventListener("click", async () => {
-  if (!pdfDoc && (!currentText || currentText.trim() === "")) {
-    alert("Please upload a readable PDF or TXT book first.");
-    return;
-  }
-
   if (synth.speaking) synth.cancel();
 
-  // Make sure voices are ready
+  // Wait until voices are ready
   let voices = synth.getVoices();
   if (voices.length === 0) {
     await new Promise((res) => {
@@ -142,7 +152,7 @@ readBtn.addEventListener("click", async () => {
     });
   }
 
-  // Get text for current page (for PDF) or all (for TXT)
+  // Determine what to read
   let textToRead = "";
   if (pdfDoc) {
     textToRead = pdfTextPerPage[currentPage - 1] || "";
@@ -150,31 +160,53 @@ readBtn.addEventListener("click", async () => {
     textToRead = currentText;
   }
 
-  if (!textToRead || textToRead.trim() === "") {
-    alert("This page has no readable text.");
+  if (!textToRead.trim()) {
+    alert("No readable text found on this page.");
     return;
   }
 
   const utterance = new SpeechSynthesisUtterance(textToRead);
   const selected = voices.find((v) => v.name === voiceSelect.value);
   if (selected) utterance.voice = selected;
+  utterance.rate = 1; // normal speed
+  utterance.pitch = 1; // normal tone
 
-  utterance.onstart = () => console.log("🎧 Reading started...");
-  utterance.onend = () => console.log("✅ Finished reading.");
-  utterance.onerror = (err) => console.error("Speech error:", err);
+  utterance.onstart = () => {
+    console.log("🎧 Reading started...");
+    readBtn.disabled = true;
+  };
 
+  utterance.onend = () => {
+    console.log("✅ Finished reading.");
+    readBtn.disabled = false;
+  };
+
+  utterance.onerror = (e) => {
+    console.error("Speech error:", e);
+    alert("Speech synthesis error occurred. Try another voice.");
+  };
+
+  currentUtterance = utterance;
   synth.speak(utterance);
 });
 
+// === Pause / Resume / Stop ===
 pauseBtn.addEventListener("click", () => {
   if (synth.speaking) {
-    synth.paused ? synth.resume() : synth.pause();
+    if (synth.paused) {
+      synth.resume();
+      console.log("▶️ Resumed reading.");
+    } else {
+      synth.pause();
+      console.log("⏸ Paused reading.");
+    }
   }
 });
 
 stopBtn.addEventListener("click", () => {
   synth.cancel();
   console.log("🛑 Reading stopped.");
+  readBtn.disabled = false;
 });
 
 // === Font, Size, Theme ===
