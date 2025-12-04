@@ -1,280 +1,122 @@
-/* ===========================================
-   Black Dollar Trust Book Club
-   Part 2/3: style.css
-   Dark Pan-African + Gold Rope Shimmer Theme
-=========================================== */
+/* Black Dollar Trust Spades 🎴
+   Pan-African 3D Board Look & Feel
+   © 2025 Black Dollar Trust Book Club
+*/
 
-/* Base colors */
-:root {
-  --pan-black: #020617;
-  --pan-red: #ef4444;
-  --pan-green: #22c55e;
-  --pan-gold: #facc15;
-  --text-main: #f9fafb;
-  --text-muted: #9ca3af;
-  --border-subtle: #1f2937;
-}
-
-/* Reset */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* Gold rope shimmer border animation */
 body {
-  background: radial-gradient(circle at top, #0b1120, var(--pan-black));
-  color: var(--text-main);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: radial-gradient(circle at top, #000 0%, #111 100%);
+  color: #f0f0f0;
+  overflow: hidden;
+}
+
+header {
+  background: linear-gradient(90deg, #d10a0a 0%, #000 40%, #006b3f 100%);
+  border-bottom: 4px solid gold;
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold;
+  color: gold;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+
+main {
   display: flex;
   justify-content: center;
-  align-items: stretch;
-  min-height: 100vh;
+  align-items: center;
+  height: calc(100vh - 80px);
+}
+
+/* Game Table Container */
+.game-board {
   position: relative;
-  overflow-x: hidden;
-}
-
-/* Rope Chain Border (animated shimmer) */
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  border: 12px solid transparent;
-  border-image: url('https://upload.wikimedia.org/wikipedia/commons/3/3d/Gold_chain_pattern.svg') 30 round;
-  animation: shimmer 12s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes shimmer {
-  0%, 95%, 100% { opacity: 1; filter: brightness(1); }
-  45%, 55% { opacity: 1; filter: brightness(1.6); }
-}
-
-/* App container */
-.app {
-  width: 100%;
-  max-width: 1200px;
-  margin: 16px;
-  background: #020617;
-  border-radius: 18px;
+  width: 900px;
+  height: 600px;
+  border: 6px solid gold;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 50%, #1a1a1a, #000);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
   overflow: hidden;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-  border: 2px solid rgba(250, 204, 21, 0.15);
-  display: flex;
-  flex-direction: column;
+  animation: tableGlow 4s infinite alternate;
 }
 
-/* Header */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: linear-gradient(90deg, var(--pan-red), var(--pan-black), var(--pan-green), var(--pan-gold));
-  padding: 10px 16px;
-  flex-wrap: wrap;
+/* Shimmer animation for gold frame */
+@keyframes tableGlow {
+  0% { box-shadow: 0 0 10px gold; }
+  50% { box-shadow: 0 0 25px #facc15; }
+  100% { box-shadow: 0 0 10px gold; }
 }
 
-.logo-title h1 {
-  font-size: 1.2rem;
-  font-weight: 700;
-}
-
-.subtitle {
-  font-size: 0.8rem;
-  color: #fff;
-}
-
-.logo-upload {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Canvas styling */
+#spadesCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, #0b0b0b, #000);
   cursor: pointer;
 }
 
-.logo-upload img {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 2px solid var(--pan-gold);
-  object-fit: cover;
-  background: radial-gradient(circle at center, var(--pan-gold), var(--pan-black));
-  transition: transform 0.2s;
-}
-
-.logo-upload img:hover {
-  transform: scale(1.05);
-}
-
-.upload-hint {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-/* Main layout */
-.main {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  min-height: 0;
-}
-
-.reader-panel, .game-panel {
-  flex: 1;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.reader-panel {
-  border-right: 1px solid var(--border-subtle);
-}
-
-/* Texts */
-.panel-subtext {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-/* Upload section */
-.upload-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.file-btn {
-  background: linear-gradient(135deg, var(--pan-green), var(--pan-gold));
-  color: var(--pan-black);
-  font-weight: 600;
-  padding: 7px 14px;
-  border-radius: 999px;
-  cursor: pointer;
+/* Start Game button */
+#startGame {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, gold, #b8860b);
   border: none;
-  box-shadow: 0 3px 10px rgba(34, 197, 94, 0.5);
-  transition: transform 0.08s, box-shadow 0.08s;
-}
-
-.file-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(250, 204, 21, 0.3);
-}
-
-#uploadStatus {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-/* Book list */
-.book-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  background: #0b1120;
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
-  padding: 6px;
-}
-
-.book-list div {
-  padding: 6px 10px;
-  font-size: 0.8rem;
-  color: var(--text-main);
+  color: #000;
+  font-weight: bold;
+  padding: 12px 22px;
   border-radius: 6px;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.1s, border 0.1s;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+  transition: 0.3s ease;
 }
 
-.book-list div:hover {
-  background: #111827;
-  border: 1px solid var(--pan-green);
+#startGame:hover {
+  transform: translateX(-50%) scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 1);
 }
 
-.book-list div.active {
-  background: rgba(34, 197, 94, 0.18);
-  border: 1px solid var(--pan-green);
+/* Overlay text for AI dialogue or status */
+.status-banner {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: gold;
+  padding: 6px 18px;
+  border: 1px solid gold;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
-/* Reader controls */
-.reader-controls {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+/* Placeholder for player names */
+.player-label {
+  position: absolute;
+  color: #f5f5f5;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid gold;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px #000;
 }
 
-.voice-select, button {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: #111827;
-  color: var(--text-main);
-  font-size: 0.8rem;
-  cursor: pointer;
-}
+.player-bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
+.player-top { top: 10px; left: 50%; transform: translateX(-50%); }
+.player-left { top: 50%; left: 10px; transform: translateY(-50%); }
+.player-right { top: 50%; right: 10px; transform: translateY(-50%); }
 
-button:hover {
-  background: #1e293b;
-}
-
-button:active {
-  transform: translateY(1px);
-}
-
-/* Preview area */
-.preview-area {
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: #020617;
-  overflow: hidden;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-#pdfCanvas {
-  display: none;
-  width: 100%;
-  height: auto;
-}
-
-#textPreview {
-  flex: 1;
-  font-size: 0.8rem;
-  padding: 8px;
-  overflow-y: auto;
-  color: var(--text-main);
-  white-space: pre-wrap;
-}
-
-/* Game panel */
-.game-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-
-/* Responsive */
-@media (max-width: 900px) {
-  .main {
-    flex-direction: column;
-  }
-  .reader-panel {
-    border-right: none;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-}
-
-@media (max-width: 480px) {
-  .logo-title h1 {
-    font-size: 1rem;
-  }
-  .subtitle {
-    font-size: 0.7rem;
-  }
+/* Card hover hint */
+canvas:hover {
+  filter: brightness(1.1);
 }
