@@ -122,22 +122,60 @@ nextPageBtn.addEventListener("click", () => {
   if (pdfDoc && currentPage < pdfDoc.numPages) showPage(++currentPage);
 });
 
-// === Voice Reading ===
-readBtn.addEventListener("click", () => {
-  if (!currentText || currentText.trim() === "") {
-    return alert("Please upload a readable book first.");
+// === Voice Reading (Improved + Page-Aware) ===
+readBtn.addEventListener("click", async () => {
+  if (!pdfDoc && (!currentText || currentText.trim() === "")) {
+    alert("Please upload a readable PDF or TXT book first.");
+    return;
   }
+
   if (synth.speaking) synth.cancel();
 
-  const utter = new SpeechSynthesisUtterance(currentText);
-  const selected = synth.getVoices().find(v => v.name === voiceSelect.value);
-  if (selected) utter.voice = selected;
-  synth.speak(utter);
+  // Make sure voices are ready
+  let voices = synth.getVoices();
+  if (voices.length === 0) {
+    await new Promise((res) => {
+      speechSynthesis.onvoiceschanged = () => {
+        voices = synth.getVoices();
+        res();
+      };
+    });
+  }
+
+  // Get text for current page (for PDF) or all (for TXT)
+  let textToRead = "";
+  if (pdfDoc) {
+    textToRead = pdfTextPerPage[currentPage - 1] || "";
+  } else {
+    textToRead = currentText;
+  }
+
+  if (!textToRead || textToRead.trim() === "") {
+    alert("This page has no readable text.");
+    return;
+  }
+
+  const utterance = new SpeechSynthesisUtterance(textToRead);
+  const selected = voices.find((v) => v.name === voiceSelect.value);
+  if (selected) utterance.voice = selected;
+
+  utterance.onstart = () => console.log("🎧 Reading started...");
+  utterance.onend = () => console.log("✅ Finished reading.");
+  utterance.onerror = (err) => console.error("Speech error:", err);
+
+  synth.speak(utterance);
 });
+
 pauseBtn.addEventListener("click", () => {
-  if (synth.speaking) synth.paused ? synth.resume() : synth.pause();
+  if (synth.speaking) {
+    synth.paused ? synth.resume() : synth.pause();
+  }
 });
-stopBtn.addEventListener("click", () => synth.cancel());
+
+stopBtn.addEventListener("click", () => {
+  synth.cancel();
+  console.log("🛑 Reading stopped.");
+});
 
 // === Font, Size, Theme ===
 fontSelect.addEventListener("change", () => {
