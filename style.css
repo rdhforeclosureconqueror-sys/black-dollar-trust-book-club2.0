@@ -146,3 +146,35 @@ footer {
     flex-direction: column;
   }
 }
+
+/* === Book Reader Styling === */
+.book-page {
+  line-height: 1.8;
+  font-size: 1rem;
+  text-align: justify;
+  color: #eee;
+  font-family: "Georgia", serif;
+  background: #0c0c0c;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.book-page p {
+  margin-bottom: 1em;
+  text-indent: 2em;
+}
+
+/* Make book area scroll smoothly */
+#textPreview {
+  scroll-behavior: smooth;
+}
+
+/* For mobile */
+@media (max-width: 600px) {
+  .book-page {
+    font-size: 1.1rem;
+    line-height: 1.9;
+    padding: 12px;
+  }
+}
